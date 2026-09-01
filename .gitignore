@@ -1,0 +1,48 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+secrets/
+credentials/
+*.secret
+*.credentials
+phonebroker.local.*
+config/proxy_guard.json
+config/investing_authorized.json
+config/*local*.json
+.pytest_cache/
+.coverage
+.mypy_cache/
+*.log
+
+# Personal brokerage statements and locally derived transaction audits
+history/
+.secrets/
+tmp/
+raw/*.txt
+
+# Local runtime inputs and generated state may contain financial or device data.
+# The sanitized GitHub snapshot never tracks anything under these directories.
+data/
+reports/
+
+# AI agent session state
+.reasonix/
+
+# Android/Gradle generated files
+.gradle/
+**/build/
+local.properties
+*.apk
+*.aab
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+note.txt
+data/proxy_guard/

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "foundf.portfolio_risk_limits.v1",
+  "title": "FoundF 组合风险规则",
+  "type": "object",
+  "required": [
+    "policy_id",
+    "policy_version",
+    "max_single_position",
+    "max_sector_weight",
+    "max_unknown_sector_weight",
+    "warning_ratio",
+    "drawdown_tiers"
+  ],
+  "properties": {
+    "policy_id": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "string", "minLength": 1},
+    "max_single_position": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "max_sector_weight": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "max_unknown_sector_weight": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "warning_ratio": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "drawdown_tiers": {"type": "array"},
+    "sector_overrides": {"type": "object"}
+  },
+  "additionalProperties": false
+}

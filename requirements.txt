@@ -1,0 +1,13 @@
+# FoundF — Production Dependencies (Python 3.10+)
+pandas>=2.0,<3
+numpy>=1.24,<3
+scipy>=1.10,<2
+fastapi>=0.100,<1
+uvicorn>=0.20,<1
+akshare>=1.10,<2       # Market data (primary fallback)
+baostock==0.9.3        # A-share basic/daily fallback; pinned after 2026-07-30 probe
+yfinance>=0.2.65,<1    # HK stock fundamentals; avoid unreviewed 1.x API changes
+duckdb>=1.0,<1.5       # Local database；固定主版本避免覆盖率/扩展加载不兼容
+requests>=2.28,<3
+httpx>=0.27,<1
+PySocks>=1.7,<2        # proxy_guard baostock SOCKS5 注入（仅宿主机 .venv 逃生路径需要）

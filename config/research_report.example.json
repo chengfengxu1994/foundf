@@ -1,0 +1,22 @@
+{
+  "institution_id": "先运行 register-institution 后填写返回值",
+  "title": "示例：公司未来三个月展望",
+  "published_at": "2026-07-23T09:00:00+08:00",
+  "source_url": "https://research.example/report",
+  "license_mode": "USER_AUTHORIZED",
+  "storage_allowed": false,
+  "analyst_names": [],
+  "user_synthesis": "用户自己的事实与观点摘要，不复制未获许可的研报原文。",
+  "claims": [
+    {
+      "symbol": "00700",
+      "claim_type": "DIRECTION",
+      "claim_summary": "预计未来三个月相对基准表现较强",
+      "direction": "BULLISH",
+      "benchmark_symbol": "HSI",
+      "horizon_date": "2026-10-23",
+      "confidence_score": 70,
+      "evaluable": true
+    }
+  ]
+}

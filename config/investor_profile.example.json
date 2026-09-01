@@ -1,0 +1,15 @@
+{
+  "schema_version": "foundf.investor_profile.v1",
+  "confirmed": false,
+  "goal_type": null,
+  "horizon_years": null,
+  "monthly_essential_expense_cny": null,
+  "emergency_fund_months": null,
+  "known_cash_need_12m_cny": null,
+  "income_stability": null,
+  "max_acceptable_drawdown": null,
+  "loss_reaction": null,
+  "investment_experience": null,
+  "planned_monthly_contribution_cny": null,
+  "assessed_at": null
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "foundf.investing_authorized.v1",
+  "license_reference": "请填写授权导出依据或合同编号",
+  "items": [
+    {
+      "title": "示例：公司财报日历",
+      "url": "https://www.investing.com/example",
+      "snippet": "仅填写授权允许保存的摘要；本示例不是投资事实。",
+      "published_at": "2026-07-23"
+    }
+  ]
+}

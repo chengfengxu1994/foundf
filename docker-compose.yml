@@ -1,0 +1,260 @@
+x-runtime-common: &runtime-common
+  profiles: ["automation"]
+  image: foundf-runtime:local
+  build:
+    context: .
+    dockerfile: deploy/runtime/Dockerfile
+  restart: unless-stopped
+  init: true
+  user: "${FOUNDF_RUNTIME_UID:-1000}:${FOUNDF_RUNTIME_GID:-1000}"
+  read_only: true
+  cap_drop: ["ALL"]
+  security_opt:
+    - no-new-privileges:true
+  tmpfs:
+    - /tmp
+  volumes:
+    - ${FOUNDF_HOST_DATA_DIR:-./data}:/app/data
+    - ./reports:/app/reports
+    - ./config:/app/config:ro
+    - ./.secrets:/app/.secrets:ro
+  environment: &runtime-environment
+    PYTHONPATH: /app
+    PYTHONDONTWRITEBYTECODE: "1"
+    FOUNDF_DATA_ROOT: /app/data
+    FOUNDF_REPORT_ROOT: /app/reports
+    DUCKDB_PATH: /app/data/finance.duckdb
+    XDG_CACHE_HOME: /app/data/runtime/cache
+    TZ: Asia/Shanghai
+    FOUNDF_AUTOMATION_ENABLED: ${FOUNDF_AUTOMATION_ENABLED:-false}
+    TUSHARE_TOKEN: ${TUSHARE_TOKEN:-}
+    FRED_API_KEY: ${FRED_API_KEY:-}
+    SEC_USER_AGENT: ${SEC_USER_AGENT:-}
+    EXTERNAL_INTELLIGENCE_ENABLED: ${EXTERNAL_INTELLIGENCE_ENABLED:-false}
+    EXTERNAL_INTELLIGENCE_QUERIES: ${EXTERNAL_INTELLIGENCE_QUERIES:-}
+    BLOOMBERG_ENABLED: ${BLOOMBERG_ENABLED:-false}
+    BLOOMBERG_ENTITLEMENT_CONFIRMED: ${BLOOMBERG_ENTITLEMENT_CONFIRMED:-false}
+    BLOOMBERG_STORAGE_ALLOWED: ${BLOOMBERG_STORAGE_ALLOWED:-false}
+    BLOOMBERG_HOST: ${BLOOMBERG_HOST:-localhost}
+    BLOOMBERG_PORT: ${BLOOMBERG_PORT:-8194}
+    INVESTING_EXPORT_LICENSE_CONFIRMED: ${INVESTING_EXPORT_LICENSE_CONFIRMED:-false}
+    BRAVE_SEARCH_API_KEY: ${BRAVE_SEARCH_API_KEY:-}
+    BRAVE_SEARCH_STORAGE_ALLOWED: ${BRAVE_SEARCH_STORAGE_ALLOWED:-false}
+    GOOGLE_CSE_API_KEY: ${GOOGLE_CSE_API_KEY:-}
+    GOOGLE_CSE_ID: ${GOOGLE_CSE_ID:-}
+    GOOGLE_CSE_EXISTING_CUSTOMER: ${GOOGLE_CSE_EXISTING_CUSTOMER:-false}
+  stop_grace_period: 30s
+  logging:
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: deploy/dashboard/Dockerfile
+    restart: unless-stopped
+    init: true
+    user: "${FOUNDF_RUNTIME_UID:-1000}:${FOUNDF_RUNTIME_GID:-1000}"
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+    ports:
+      # 只绑定回环地址；外部访问应通过使用者自己的 HTTPS 反向代理与认证。
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./reports/reconciliation:/app/reports/reconciliation:ro
+      - ./reports/sim_review:/app/reports/sim_review:ro
+      - ./reports/adhoc_backtest:/app/reports/adhoc_backtest:ro
+      - ./reports/nav_compare:/app/reports/nav_compare:ro
+      - ./portfolio_manager:/app/portfolio_manager:ro
+      - ./strategy_manager:/app/strategy_manager:ro
+      - ./api:/app/api:ro
+      - ./config:/app/config:ro
+      # 行情快照与自选审计需要写入；投资建议/交易能力仍保持只读。
+      - ${FOUNDF_HOST_DATA_DIR:-./data}:/app/data
+      - ./.secrets:/app/.secrets:ro
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONDONTWRITEBYTECODE=1
+      - FOUNDF_DATA_ROOT=/app/data
+      - DUCKDB_PATH=/app/data/finance.duckdb
+      - XDG_CACHE_HOME=/tmp/.cache
+      - TZ=Asia/Shanghai
+      - DASHBOARD_AUTH_ENABLED=${DASHBOARD_AUTH_ENABLED:-false}
+      - DASHBOARD_USERNAME=${DASHBOARD_USERNAME:-}
+      - DASHBOARD_PASSWORD_HASH=${DASHBOARD_PASSWORD_HASH:-}
+      - DASHBOARD_SECRET_KEY=${DASHBOARD_SECRET_KEY:-}
+      - DASHBOARD_SESSION_SECONDS=${DASHBOARD_SESSION_SECONDS:-28800}
+      - DASHBOARD_COOKIE_SECURE=${DASHBOARD_COOKIE_SECURE:-false}
+      - FOUNDF_CORS_ORIGINS=${FOUNDF_CORS_ORIGINS:-}
+      - EXTERNAL_INTELLIGENCE_ENABLED=${EXTERNAL_INTELLIGENCE_ENABLED:-false}
+      - BLOOMBERG_ENABLED=${BLOOMBERG_ENABLED:-false}
+      - BLOOMBERG_ENTITLEMENT_CONFIRMED=${BLOOMBERG_ENTITLEMENT_CONFIRMED:-false}
+      - BLOOMBERG_STORAGE_ALLOWED=${BLOOMBERG_STORAGE_ALLOWED:-false}
+      - BLOOMBERG_HOST=${BLOOMBERG_HOST:-localhost}
+      - BLOOMBERG_PORT=${BLOOMBERG_PORT:-8194}
+      - INVESTING_EXPORT_LICENSE_CONFIRMED=${INVESTING_EXPORT_LICENSE_CONFIRMED:-false}
+      - BRAVE_SEARCH_API_KEY=${BRAVE_SEARCH_API_KEY:-}
+      - BRAVE_SEARCH_STORAGE_ALLOWED=${BRAVE_SEARCH_STORAGE_ALLOWED:-false}
+      - GOOGLE_CSE_API_KEY=${GOOGLE_CSE_API_KEY:-}
+      - GOOGLE_CSE_ID=${GOOGLE_CSE_ID:-}
+      - GOOGLE_CSE_EXISTING_CUSTOMER=${GOOGLE_CSE_EXISTING_CUSTOMER:-false}
+      - SEC_USER_AGENT=${SEC_USER_AGENT:-}
+      - MARKET_WATCH_ENABLED=${MARKET_WATCH_ENABLED:-true}
+      - MARKET_WATCH_POLL_SECONDS=${MARKET_WATCH_POLL_SECONDS:-60}
+      - MARKET_WATCH_MUTATIONS_ENABLED=${MARKET_WATCH_MUTATIONS_ENABLED:-false}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/status')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  backup:
+    profiles: ["ops"]
+    build:
+      context: .
+      dockerfile: deploy/dashboard/Dockerfile
+    volumes:
+      - ${FOUNDF_HOST_DATA_DIR:-./data}:/app/data
+      - ./reports:/app/reports:ro
+    environment:
+      - PYTHONPATH=/app
+      - FOUNDF_DATA_ROOT=/app/data
+      - FOUNDF_REPORT_ROOT=/app/reports
+      - DUCKDB_PATH=/app/data/finance.duckdb
+      - TZ=Asia/Shanghai
+    command: ["python", "-m", "foundf_db.backup", "create", "--data-root", "/app/data", "--report-root", "/app/reports"]
+
+  collector:
+    <<: *runtime-common
+    command:
+      - python
+      - -m
+      - foundf_db.runtime_scheduler
+      - loop
+      - --task
+      - collect
+      - --at
+      - ${FOUNDF_COLLECT_AT:-17:15}
+      - --timezone
+      - Asia/Shanghai
+      - --poll-seconds
+      - "30"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -m
+        - foundf_db.runtime_scheduler
+        - health
+        - --task
+        - collect
+        - --data-root
+        - /app/data
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+  # 注: A 股盘中快照(quote_daemon)运行在宿主机而非容器——东财 push2 CDN
+  # 会断开容器 TLS 握手(2026-08-06 实测), 宿主机正常。由会话 cron 每日
+  # 09:17 看门启动, 见 LONG_TERM_MEMORY.md。
+
+  daily-worker:
+    <<: *runtime-common
+    command:
+      - python
+      - -m
+      - foundf_db.runtime_scheduler
+      - loop
+      - --task
+      - daily
+      - --at
+      - ${FOUNDF_DAILY_AT:-18:15}
+      - --timezone
+      - Asia/Shanghai
+      - --poll-seconds
+      - "30"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -m
+        - foundf_db.runtime_scheduler
+        - health
+        - --task
+        - daily
+        - --data-root
+        - /app/data
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+  review-worker:
+    <<: *runtime-common
+    command:
+      - python
+      - -m
+      - foundf_db.runtime_scheduler
+      - loop
+      - --task
+      - review
+      - --at
+      - ${FOUNDF_REVIEW_AT:-18:45}
+      - --timezone
+      - Asia/Shanghai
+      - --poll-seconds
+      - "30"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -m
+        - foundf_db.runtime_scheduler
+        - health
+        - --task
+        - review
+        - --data-root
+        - /app/data
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+  backup-scheduler:
+    <<: *runtime-common
+    command:
+      - python
+      - -m
+      - foundf_db.runtime_scheduler
+      - loop
+      - --task
+      - backup
+      - --at
+      - ${FOUNDF_BACKUP_AT:-03:30}
+      - --timezone
+      - Asia/Shanghai
+      - --poll-seconds
+      - "30"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -m
+        - foundf_db.runtime_scheduler
+        - health
+        - --task
+        - backup
+        - --data-root
+        - /app/data
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 45s

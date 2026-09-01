@@ -1,0 +1,35 @@
+{
+  "occurred_at": "2026-07-23T08:00:00+08:00",
+  "event_type": "COMPANY",
+  "scope": "COMPANY",
+  "title": "示例：公司发布正式业绩公告",
+  "summary": "用户根据正式资料撰写的事实摘要。",
+  "details": "记录盈利、现金流、估值、治理和不确定性分析。",
+  "materiality_score": 80,
+  "risk_score": 60,
+  "confidence_score": 75,
+  "market_regime": "NEUTRAL",
+  "expected_horizon": "90D",
+  "asset_links": [
+    {
+      "symbol": "00700",
+      "relation_type": "DIRECT",
+      "impact_direction": "MIXED",
+      "impact_channels": ["EARNINGS", "VALUATION"],
+      "expected_effect": "需要未来两个报告期验证",
+      "confidence_score": 65
+    }
+  ],
+  "evidence": [
+    {
+      "provider": "hkex",
+      "title": "正式公告",
+      "url": "https://www.hkexnews.hk/example",
+      "content": "只有许可允许时填写并保存正文。",
+      "published_at": "2026-07-23T07:00:00+08:00",
+      "authority_level": "PRIMARY",
+      "license_mode": "OFFICIAL_PUBLICATION",
+      "storage_allowed": true
+    }
+  ]
+}

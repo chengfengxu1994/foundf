@@ -1,0 +1,41 @@
+# FoundF — .dockerignore
+.git/
+.gitignore
+.secrets/
+.env
+.env.*
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large archives
+*.tar.gz
+*.zip
+*.parquet
+*.duckdb
+data/
+reports/
+
+# Temp
+tmp/
+*.tmp
+archive/
+
+# Docs (not needed at runtime)
+AGENTS.md
+README.md
+*.md
+
+# APK build
+android/build/
+android/.gradle/

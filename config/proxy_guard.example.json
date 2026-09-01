@@ -1,0 +1,13 @@
+{
+  "enabled": false,
+  "controller_url": "http://127.0.0.1:9090",
+  "mixed_host": "127.0.0.1",
+  "mixed_port": 7890,
+  "selector_group": "GLOBAL",
+  "test_url": "http://www.gstatic.com/generate_204",
+  "probe_timeout_ms": 3000,
+  "node_exclude_patterns": ["剩余流量", "套餐到期", "距离下次重置"],
+  "cooldown_minutes": 60,
+  "max_nodes_per_escape": 5,
+  "request_timeout_s": 5.0
+}
